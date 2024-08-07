@@ -1,0 +1,15 @@
+*.xlsx
+*.yaml
+*.yml
+
+# Python virtual environments
+*venv*/
+*.virtualenv*/
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+pip-selfcheck.json
