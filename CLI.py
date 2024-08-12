@@ -158,10 +158,10 @@ def write_results_to_excel(operators, skipped_rules, rule_types):
 
 def main():
     parser = argparse.ArgumentParser(description="Process YAML files and extract operators and rule IDs.")
-    parser.add_argument("directory", help="Directory containing YAML files")
+    parser.add_argument("-f", "--file", required=True, help="Directory containing YAML files")
     args = parser.parse_args()
 
-    operators, skipped_rules, rule_types = process_yaml_files(args.directory)
+    operators, skipped_rules, rule_types = process_yaml_files(args.file)
     output_file = write_results_to_excel(operators, skipped_rules, rule_types)
     print(f"Results written to {output_file}")
     print(f"Total rules processed: {sum(len(ids) for ids in rule_types.values())}")

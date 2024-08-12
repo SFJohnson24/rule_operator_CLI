@@ -1,3 +1,4 @@
+this uses python 3.12
 set up python virtual environment
         `python -m venv myenv`
 active the virtual environment
@@ -5,6 +6,6 @@ active the virtual environment
         linux/mac: `source myenv/bin/activate`
 
 install dependencies 
-      `pip install PyYAML openpyxl``
+      `pip install PyYAML openpyxl`
 
 run command `python CLI.py -f <path to the rule directory>`
