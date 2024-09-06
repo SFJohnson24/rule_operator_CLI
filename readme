@@ -13,4 +13,5 @@ Then install dependencies:
 To run the script:
         navigate to https://rule-editor.cdisc.org/ and export all rules 
         create a folder `Rules` in the git repo root directory and put the rule yml files into the Rules folder of this repo
-        run command `python CLI.py -f <path to the rule directory>` in the CLI (ensure you have activated the virtual environment prior to this)
+        run command `python CLI.py -f ./Rules` in the CLI (ensure you have activated the virtual environment prior to this)
+git

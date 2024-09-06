@@ -11,6 +11,8 @@ def process_yaml_files(directory):
     operators = defaultdict(set)
     skipped_rules = []
     rule_types = defaultdict(set)
+    published_rules = []
+    draft_rules = []
 
     for filename in os.listdir(directory):
         if filename.endswith('.yaml') or filename.endswith('.yml'):
@@ -23,10 +25,19 @@ def process_yaml_files(directory):
                         skipped_rules.append((filename, str(e)))
                         continue
 
-                    core_id = data.get('Core', {}).get('Id')
+                    core = data.get('Core', {})
+                    core_id = core.get('Id')
+                    status = core.get('Status')
+
                     if core_id:
                         rule_type = data.get('Rule Type', 'Unknown')
                         rule_types[rule_type].add(core_id)
+
+                        # Add rule to appropriate status list
+                        if status == 'Published':
+                            published_rules.append(core_id)
+                        elif status == 'Draft':
+                            draft_rules.append(core_id)
 
                         # Check the 'Check' section
                         check = data.get('Check', {})
@@ -58,9 +69,16 @@ def process_yaml_files(directory):
                     data = yaml.safe_load(content)
                     # Process data as before...
                     core_id = data.get('Core', {}).get('Id')
+                    status = data.get('Core', {}).get('Status')
                     if core_id:
                         rule_type = data.get('Rule Type', 'Unknown')
                         rule_types[rule_type].add(core_id)
+
+                        # Add rule to appropriate status list
+                        if status == 'Published':
+                            published_rules.append(core_id)
+                        elif status == 'Draft':
+                            draft_rules.append(core_id)
 
                         # Check the 'Check' section
                         check = data.get('Check', {})
@@ -88,10 +106,10 @@ def process_yaml_files(directory):
                     print(f"Failed to process {filename}: {e}")
                     skipped_rules.append((filename, str(e)))
 
-    return operators, skipped_rules, rule_types
+    return operators, skipped_rules, rule_types, published_rules, draft_rules
 
 
-def write_results_to_excel(operators, skipped_rules, rule_types):
+def write_results_to_excel(operators, skipped_rules, rule_types, published_rules, draft_rules):
     wb = Workbook()
     sheet = wb.active
     sheet.title = "Operators"
@@ -148,6 +166,26 @@ def write_results_to_excel(operators, skipped_rules, rule_types):
         for cell in row:
             cell.alignment = Alignment(wrap_text=True, vertical='top')
 
+    # Create a new sheet for rule statuses
+    status_sheet = wb.create_sheet(title="Rule Statuses")
+    status_sheet['A1'] = 'Status'
+    status_sheet['B1'] = 'Core IDs'
+
+    # Write published rules
+    status_sheet['A2'] = 'Published'
+    status_sheet['B2'] = ', '.join(sorted(published_rules))
+
+    # Write draft rules
+    status_sheet['A3'] = 'Draft'
+    status_sheet['B3'] = ', '.join(sorted(draft_rules))
+
+    # Set column widths and text wrapping for Rule Statuses sheet
+    status_sheet.column_dimensions['A'].width = 30
+    status_sheet.column_dimensions['B'].width = 100
+    for row in status_sheet.iter_rows():
+        for cell in row:
+            cell.alignment = Alignment(wrap_text=True, vertical='top')
+
     # Generate filename with current date and time
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"rules_{current_time}.xlsx"
@@ -157,16 +195,18 @@ def write_results_to_excel(operators, skipped_rules, rule_types):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process YAML files and extract operators and rule IDs.")
+    parser = argparse.ArgumentParser(description="Process YAML files and extract operators, rule IDs, and statuses.")
     parser.add_argument("-f", "--file", required=True, help="Directory containing YAML files")
     args = parser.parse_args()
 
-    operators, skipped_rules, rule_types = process_yaml_files(args.file)
-    output_file = write_results_to_excel(operators, skipped_rules, rule_types)
+    operators, skipped_rules, rule_types, published_rules, draft_rules = process_yaml_files(args.file)
+    output_file = write_results_to_excel(operators, skipped_rules, rule_types, published_rules, draft_rules)
     print(f"Results written to {output_file}")
     print(f"Total rules processed: {sum(len(ids) for ids in rule_types.values())}")
     print(f"Total rules skipped: {len(skipped_rules)}")
     print(f"Total rule types: {len(rule_types)}")
+    print(f"Total published rules: {len(published_rules)}")
+    print(f"Total draft rules: {len(draft_rules)}")
 
 
 if __name__ == "__main__":
